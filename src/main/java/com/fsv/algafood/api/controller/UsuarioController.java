@@ -19,6 +19,7 @@ import com.fsv.algafood.api.assembler.UsuarioInputDisassembler;
 import com.fsv.algafood.api.assembler.UsuarioModelAssembler;
 import com.fsv.algafood.api.model.UsuarioModel;
 import com.fsv.algafood.api.model.input.SenhaInput;
+import com.fsv.algafood.api.model.input.UsuarioComSenhaInput;
 import com.fsv.algafood.api.model.input.UsuarioInput;
 import com.fsv.algafood.domain.model.Usuario;
 import com.fsv.algafood.domain.repository.UsuarioRepository;
@@ -47,32 +48,32 @@ public class UsuarioController {
 		return usuarioModelAssembler.toCollectionModel(todosUsuarios);
 	}
 	
-	@GetMapping("/{grupoId}")
-	public UsuarioModel buscar(@PathVariable Long grupoId) {
-		Usuario usuario = usuarioService.buscarOuFalhar(grupoId);
+	@GetMapping("/{usuarioId}")
+	public UsuarioModel buscar(@PathVariable Long usuarioId) {
+		Usuario usuario = usuarioService.buscarOuFalhar(usuarioId);
 		
 		return usuarioModelAssembler.toModel(usuario);
 	}
 	
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public UsuarioModel adicionar(@RequestBody @Valid UsuarioInput usuarioInput) {
+	public UsuarioModel adicionar(@RequestBody @Valid UsuarioComSenhaInput usuarioInput) {
 		Usuario usuario = usuarioInputDisassembler.toDomainObject(usuarioInput);
 		usuario = usuarioService.salvar(usuario);
 		
 		return usuarioModelAssembler.toModel(usuario);
 	}
 	
-	@PutMapping("/{grupoId}")
-	public UsuarioModel atualizar(@PathVariable Long grupoId, @RequestBody @Valid UsuarioInput usuarioInput) {
-		Usuario usuarioAtual = usuarioService.buscarOuFalhar(grupoId);
+	@PutMapping("/{usuarioId}")
+	public UsuarioModel atualizar(@PathVariable Long usuarioId, @RequestBody @Valid UsuarioInput usuarioInput) {
+		Usuario usuarioAtual = usuarioService.buscarOuFalhar(usuarioId);
 		usuarioInputDisassembler.copyToDomainObject(usuarioInput, usuarioAtual);
 		usuarioAtual = usuarioService.salvar(usuarioAtual);
 		
 		return usuarioModelAssembler.toModel(usuarioAtual);
 	}
 	
-	@PutMapping("/{grupoId}")
+	@PutMapping("/{usuarioId}/senha")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void alterarSenha(@PathVariable Long usuarioId, @RequestBody @Valid SenhaInput senha) {
 		usuarioService.alterarSenha(usuarioId, senha.getSenhaAtual(), senha.getNovaSenha());
