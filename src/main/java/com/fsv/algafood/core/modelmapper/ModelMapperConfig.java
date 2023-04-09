@@ -13,7 +13,7 @@ import com.fsv.algafood.domain.model.ItemPedido;
 public class ModelMapperConfig {
 
 	@Bean
-	public ModelMapper modelMapper() {
+	ModelMapper modelMapper() {
 		var modelMapper = new ModelMapper();
 		
 		var enderecoToEnderecoModelTypeMap = modelMapper.createTypeMap(Endereco.class, EnderecoModel.class);
