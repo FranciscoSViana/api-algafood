@@ -45,7 +45,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	@Override
 	protected ResponseEntity<Object> handleBindException(BindException ex, HttpHeaders headers, HttpStatus status,
 			WebRequest request) {
-		// TODO Auto-generated method stub
+		
 		return handleValidationInternal(ex, ex.getBindingResult(), headers, status, request);
 	}
 	

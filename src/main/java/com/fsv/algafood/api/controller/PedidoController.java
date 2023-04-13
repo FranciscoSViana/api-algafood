@@ -24,14 +24,16 @@ import com.fsv.algafood.api.assembler.PedidoResumoModelAssembler;
 import com.fsv.algafood.api.model.PedidoModel;
 import com.fsv.algafood.api.model.PedidoResumoModel;
 import com.fsv.algafood.api.model.input.PedidoInput;
+import com.fsv.algafood.core.data.PageableTranslator;
 import com.fsv.algafood.domain.exception.EntidadeNaoEncontradaException;
 import com.fsv.algafood.domain.exception.NegocioException;
+import com.fsv.algafood.domain.filter.PedidoFilter;
 import com.fsv.algafood.domain.model.Pedido;
 import com.fsv.algafood.domain.model.Usuario;
 import com.fsv.algafood.domain.repository.PedidoRepository;
-import com.fsv.algafood.domain.repository.filter.PedidoFilter;
 import com.fsv.algafood.domain.service.EmissaoPedidoService;
 import com.fsv.algafood.infrastructure.repository.spec.PedidoSpecs;
+import com.google.common.collect.ImmutableMap;
 
 @RestController
 @RequestMapping("/pedidos")
@@ -74,6 +76,9 @@ public class PedidoController {
 	@GetMapping
 	public Page<PedidoResumoModel> pesquisar(PedidoFilter filtro, 
 			@PageableDefault(size = 10) Pageable pageable) {
+		
+		pageable = traduzirPageable(pageable);
+		
 		Page<Pedido> pedidosPage = pedidoRepository.findAll(
 				PedidoSpecs.usandoFiltro(filtro), pageable);
 		
@@ -108,5 +113,16 @@ public class PedidoController {
 		} catch (EntidadeNaoEncontradaException e) {
 			throw new NegocioException(e.getMessage(), e);
 		}
+	}
+	
+	private Pageable traduzirPageable(Pageable apiPageable) {
+		var mapeamento = ImmutableMap.of(
+				"codigo", "codigo",
+				"restaurante.nome", "restaurante.nome",
+				"nomeCliente", "cliente.nome",
+				"valorTotal", "valorTotal"
+				);
+		
+		return PageableTranslator.translate(apiPageable, mapeamento);
 	}
 }
