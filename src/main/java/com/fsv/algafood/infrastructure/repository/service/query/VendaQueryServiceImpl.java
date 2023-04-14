@@ -1,4 +1,4 @@
-package com.fsv.algafood.infrastructure.repository.service;
+package com.fsv.algafood.infrastructure.repository.service.query;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,14 +27,19 @@ public class VendaQueryServiceImpl implements VendaQueryService {
 		var builder = manager.getCriteriaBuilder();
 		var query = builder.createQuery(VendaDiaria.class);
 		var root = query.from(Pedido.class);
+		var predicates = new ArrayList<Predicate>();
 		
-		var functionConvertTzDataCriacao = builder.function("convert_tz", 
-				Date.class, root.get("dataCriacao"),
+		var functionConvertTzDataCriacao = builder.function(
+				"convert_tz", Date.class, root.get("dataCriacao"),
 				builder.literal("+00:00"), builder.literal(timeOffset));
 		
-		var functionDateDataCriacao = builder.function("date", Date.class, functionConvertTzDataCriacao);
+		var functionDateDataCriacao = builder.function(
+				"date", Date.class, functionConvertTzDataCriacao);
 		
-		var predicates = new ArrayList<Predicate>();
+		var selection = builder.construct(VendaDiaria.class, 
+				functionDateDataCriacao,
+				builder.count(root.get("id")),
+				builder.sum(root.get("valorTotal")));
 		
 		if (filtro.getRestauranteId() != null) {
 			predicates.add(builder.equal(root.get("restaurante"), filtro.getRestauranteId()));
@@ -48,16 +53,12 @@ public class VendaQueryServiceImpl implements VendaQueryService {
 			predicates.add(builder.equal(root.get("dataCriacao"), filtro.getDataCriacaoFim()));
 		}
 		
-		predicates.add(root.get("status").in(StatusPedido.CONFIRMADO, StatusPedido.ENTREGUE));
-		
-		var selection = builder.construct(VendaDiaria.class, 
-				functionDateDataCriacao,
-				builder.count(root.get("id")),
-				builder.sum(root.get("valorTotal")));
+		predicates.add(root.get("status")
+				.in(StatusPedido.CONFIRMADO, StatusPedido.ENTREGUE));
 		
 		query.select(selection);
-		query.groupBy(functionDateDataCriacao);
 		query.where(predicates.toArray(new Predicate[0]));
+		query.groupBy(functionDateDataCriacao);
 		
 		return manager.createQuery(query).getResultList();
 	}
